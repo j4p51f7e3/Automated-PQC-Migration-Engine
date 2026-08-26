@@ -11,15 +11,22 @@ class MigrationAnalyzer:
     """
     
     @staticmethod
-    def analyze(finding: SecurityFinding) -> Optional[MigrationResult]:
+    def analyze(finding: SecurityFinding, llm_result=None) -> Optional[MigrationResult]:
         """
-        Takes a SecurityFinding and returns the recommended MigrationResult.
+        Takes a SecurityFinding and an optional llm_result and returns the recommended MigrationResult.
         If no rule matches, returns None.
         """
         if not finding.algorithm or not finding.usage:
             return None
             
-        rule_key = f"{finding.algorithm}:{finding.usage}"
+        if llm_result and llm_result.manual_review_required:
+            effective_usage = "Unknown"
+        elif llm_result:
+            effective_usage = llm_result.purpose.value
+        else:
+            effective_usage = finding.usage
+            
+        rule_key = f"{finding.algorithm}:{effective_usage}"
         
         # Check for specific rule
         rule_data = MIGRATION_RULES.get(rule_key)
