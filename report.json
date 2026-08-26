@@ -1,0 +1,122 @@
+{
+    "target": "test_repository",
+    "files_scanned": 4,
+    "findings": [
+        {
+            "rule_id": "CRYPTO-004",
+            "file": "test_repository\\vulnerable_ecc.py",
+            "line": 5,
+            "column": 18,
+            "algorithm": "ECC",
+            "category": "Quantum-Vulnerable Public-Key Cryptography",
+            "severity": "HIGH",
+            "description": "Elliptic-curve public-key cryptography is vulnerable to sufficiently capable quantum computers.",
+            "recommendation": "Consider ML-KEM for key establishment or ML-DSA/SLH-DSA for signatures, depending on usage.",
+            "detected_api": "cryptography.hazmat.primitives.asymmetric.ec.generate_private_key",
+            "usage": "Key Generation",
+            "key_size": null,
+            "curve": "SECP256R1",
+            "function_name": null,
+            "source_context": null,
+            "migration": {
+                "algorithm": "ECC",
+                "original_usage": "Key Generation",
+                "migration_type": "PQC Migration",
+                "primary_replacement": null,
+                "alternative_replacements": [
+                    "ML-KEM",
+                    "ML-DSA",
+                    "SLH-DSA"
+                ],
+                "manual_review_required": true,
+                "reason": "ECC key generation detected. Key generation alone does not reveal whether the key is being used for key agreement (ML-KEM) or digital signatures (ML-DSA / SLH-DSA)."
+            }
+        },
+        {
+            "rule_id": "CRYPTO-001",
+            "file": "test_repository\\vulnerable_md5.py",
+            "line": 5,
+            "column": 11,
+            "algorithm": "MD5",
+            "category": "Weak Hash Algorithm",
+            "severity": "HIGH",
+            "description": "MD5 is cryptographically broken and should not be used for security-sensitive hashing.",
+            "recommendation": "SHA-256 or SHA-3",
+            "detected_api": "hashlib.md5",
+            "usage": "Hashing",
+            "key_size": null,
+            "curve": null,
+            "function_name": null,
+            "source_context": null,
+            "migration": {
+                "algorithm": "MD5",
+                "original_usage": "Hashing",
+                "migration_type": "Hash Modernization",
+                "primary_replacement": "SHA-256",
+                "alternative_replacements": [
+                    "SHA-3"
+                ],
+                "manual_review_required": false,
+                "reason": "MD5 is cryptographically broken and should be replaced with a modern hash like SHA-256 or SHA-3."
+            }
+        },
+        {
+            "rule_id": "CRYPTO-003",
+            "file": "test_repository\\vulnerable_rsa.py",
+            "line": 5,
+            "column": 18,
+            "algorithm": "RSA",
+            "category": "Quantum-Vulnerable Public-Key Cryptography",
+            "severity": "HIGH",
+            "description": "RSA is vulnerable to sufficiently capable quantum computers using Shor's algorithm.",
+            "recommendation": "Consider a post-quantum migration such as ML-KEM for key establishment or ML-DSA for signatures, depending on usage.",
+            "detected_api": "cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key",
+            "usage": "Key Generation",
+            "key_size": 2048,
+            "curve": null,
+            "function_name": null,
+            "source_context": null,
+            "migration": {
+                "algorithm": "RSA",
+                "original_usage": "Key Generation",
+                "migration_type": "PQC Migration",
+                "primary_replacement": null,
+                "alternative_replacements": [
+                    "ML-KEM",
+                    "ML-DSA",
+                    "SLH-DSA"
+                ],
+                "manual_review_required": true,
+                "reason": "RSA key generation detected. Key generation alone does not reveal whether the key is being used for key establishment (ML-KEM) or digital signatures (ML-DSA / SLH-DSA)."
+            }
+        },
+        {
+            "rule_id": "CRYPTO-002",
+            "file": "test_repository\\vulnerable_sha1.py",
+            "line": 5,
+            "column": 11,
+            "algorithm": "SHA-1",
+            "category": "Weak Hash Algorithm",
+            "severity": "HIGH",
+            "description": "SHA-1 is deprecated for security-sensitive applications.",
+            "recommendation": "SHA-256 or SHA-3",
+            "detected_api": "hashlib.sha1",
+            "usage": "Hashing",
+            "key_size": null,
+            "curve": null,
+            "function_name": null,
+            "source_context": null,
+            "migration": {
+                "algorithm": "SHA-1",
+                "original_usage": "Hashing",
+                "migration_type": "Hash Modernization",
+                "primary_replacement": "SHA-256",
+                "alternative_replacements": [
+                    "SHA-3"
+                ],
+                "manual_review_required": false,
+                "reason": "SHA-1 is deprecated and should be replaced with a modern hash like SHA-256 or SHA-3."
+            }
+        }
+    ]
+}
