@@ -6,9 +6,11 @@ import pytest
 MAIN_SCRIPT = "main.py"
 TARGET_DIR = "test_repository"
 
-def run_cli(*args):
+def run_cli(*args, env=None):
     cmd = ["python", MAIN_SCRIPT] + list(args)
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    if env is None:
+        env = os.environ.copy()
+    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
     return result
 
 def test_cli_basic_scan():
@@ -59,4 +61,18 @@ def test_cli_invalid_target():
     result = run_cli("nonexistent_directory")
     assert result.returncode != 0
     assert "does not exist" in result.stderr
+
+def test_cli_llm_mock():
+    result = run_cli(TARGET_DIR, "--llm", "mock")
+    assert result.returncode == 0
+    assert "SCAN COMPLETE" in result.stdout
+
+def test_cli_llm_gemini_missing_key():
+    env = os.environ.copy()
+    if "GEMINI_API_KEY" in env:
+        del env["GEMINI_API_KEY"]
+    result = run_cli(TARGET_DIR, "--llm", "gemini", env=env)
+    assert result.returncode == 1
+    assert "GEMINI_API_KEY environment variable is missing" in result.stderr
+
 

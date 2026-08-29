@@ -240,4 +240,32 @@ def test_regression_mock_behavior_dynamic():
     assert r5.purpose == SemanticPurpose.KEY_ESTABLISHMENT
     assert r5.manual_review_required is False
 
+def test_low_confidence_forces_manual_review(dummy_finding):
+    client = MockLLMClient()
+    client.next_response = json.dumps({
+        "purpose": "Digital Signature",
+        "confidence": "LOW",
+        "evidence": ["Looks like a signature"],
+        "reasoning": "Might be signing",
+        "manual_review_required": False
+    })
+    analyzer = LLMAnalyzer(client)
+    result = analyzer.analyze_finding(dummy_finding)
+    assert result.purpose == SemanticPurpose.DIGITAL_SIGNATURE
+    assert result.confidence == ConfidenceLevel.LOW
+    assert result.manual_review_required is True
 
+def test_unknown_purpose_forces_manual_review(dummy_finding):
+    client = MockLLMClient()
+    client.next_response = json.dumps({
+        "purpose": "Unknown",
+        "confidence": "HIGH",
+        "evidence": ["No idea"],
+        "reasoning": "Very confident I have no idea",
+        "manual_review_required": False
+    })
+    analyzer = LLMAnalyzer(client)
+    result = analyzer.analyze_finding(dummy_finding)
+    assert result.purpose == SemanticPurpose.UNKNOWN
+    assert result.confidence == ConfidenceLevel.HIGH
+    assert result.manual_review_required is True

@@ -9,6 +9,7 @@ from scanner.parser import parse_file
 from scanner.detector import detect_crypto
 from scanner.migration.analyzer import MigrationAnalyzer
 from scanner.llm.client import MockLLMClient
+from scanner.llm.gemini_client import GeminiLLMClient
 from scanner.llm.analyzer import LLMAnalyzer
 
 
@@ -87,7 +88,7 @@ def format_text_finding(finding, finding_counter, include_migration, llm_result=
     return "\n".join(lines)
 
 
-def run_orchestration(directory, is_json, include_migration, output_file=None):
+def run_orchestration(directory, is_json, include_migration, llm_mode, output_file=None):
     if not os.path.exists(directory):
         print(f"Error: Target '{directory}' does not exist.", file=sys.stderr)
         sys.exit(1)
@@ -117,8 +118,12 @@ def run_orchestration(directory, is_json, include_migration, output_file=None):
     finding_counter = 1
     llm_results_map = {}
     
-    # Setup Mock LLM Client
-    llm_client = MockLLMClient()
+    # Setup LLM Client based on mode
+    if llm_mode == "gemini":
+        llm_client = GeminiLLMClient()
+    else:
+        llm_client = MockLLMClient()
+        
     llm_analyzer = LLMAnalyzer(llm_client)
 
     for root, directories, files in os.walk(directory):
@@ -212,6 +217,7 @@ def main():
     parser.add_argument("target", help="Target directory to scan")
     parser.add_argument("--migration", action="store_true", help="Include migration analysis")
     parser.add_argument("--format", choices=["text", "json"], default="text", help="Output format")
+    parser.add_argument("--llm", choices=["mock", "gemini"], default="mock", help="Select LLM provider for semantic analysis")
     parser.add_argument("--output", help="Output file path")
     
     args = parser.parse_args()
@@ -220,6 +226,7 @@ def main():
         directory=args.target, 
         is_json=(args.format == "json"), 
         include_migration=args.migration, 
+        llm_mode=args.llm,
         output_file=args.output
     )
 
