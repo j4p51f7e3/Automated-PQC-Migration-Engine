@@ -7,12 +7,16 @@ from scanner.rules import CRYPTO_RULES
 class CryptoDetector(ast.NodeVisitor):
 
     def __init__(self, file_path):
-
         self.file_path = file_path
-
         self.findings = []
-
         self.imports = {}
+        
+        self.file_lines = []
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                self.file_lines = f.readlines()
+        except Exception:
+            pass
 
     # =========================================================
     # IMPORT HANDLING
@@ -93,37 +97,31 @@ class CryptoDetector(ast.NodeVisitor):
                 function_name
             )
 
+            start_line = max(0, node.lineno - 3)
+            end_line = min(len(self.file_lines), node.lineno + 10)
+            context_lines = self.file_lines[start_line:end_line]
+            source_context = "".join(context_lines).strip()
+
             finding = SecurityFinding(
-
                 rule_id=rule["rule_id"],
-
                 file=self.file_path,
-
                 line=node.lineno,
-
                 column=node.col_offset,
-
                 algorithm=rule["algorithm"],
-
                 category=rule["category"],
-
                 severity=rule["severity"],
-
                 description=rule["description"],
-
                 recommendation=rule["recommendation"],
-
                 detected_api=(
                     resolved_name
                     if resolved_name
                     else function_name
                 ),
-
                 usage=usage,
-
                 key_size=key_size,
-
-                curve=curve
+                curve=curve,
+                function_name=function_name,
+                source_context=source_context
             )
 
             self.findings.append(finding)
